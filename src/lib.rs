@@ -107,7 +107,7 @@ impl Upscaler {
             cmd.env("UPSCALE_TARGET_HEIGHT", height.to_string());
         }
 
-        if let Some(width) = self.height {
+        if let Some(width) = self.width {
             cmd.env("UPSCALE_TARGET_WIDTH", width.to_string());
         }
 
