@@ -1,6 +1,6 @@
 use std::error::Error;
 use std::fmt::Display;
-use std::io::Write;
+use std::io::{stderr, Write};
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::str::from_utf8;
@@ -96,6 +96,7 @@ impl Upscaler {
         };
 
         cmd.stdout(Stdio::piped());
+        cmd.stderr(Stdio::piped());
         cmd.env("UPSCALE_SOURCE", source.as_ref());
         cmd.env("UPSCALE_DESTINATION", destination.as_ref());
 
@@ -138,6 +139,7 @@ impl Upscaler {
         };
 
         if !output.status.success() {
+            drop(stderr().write_all(&output.stderr));
             return Err(UpscaleError::ProcessError(output.status.to_string().into()));
         }
 
