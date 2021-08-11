@@ -57,20 +57,21 @@ except:
 # This is mutually exclusive with target width/height.
 # UPSCALE_SCALING_FACTOR
 
-# If set and not empty/zero, use these as the target resolution according to
-# either a "fit" or "fill" strategy.
+# If set and not empty/zero, use these as the target resolution.
+# The output image should at least "touch" the inside of this rectangle: the height or width should
+# be at least as large as the target height or width.
 # Output images may be larger than these targets.
+# If one is not set or zero it should be ignored.
 # These are mutually exclusive with scale factor.
 # UPSCALE_TARGET_WIDTH
 # UPSCALE_TARGET_HEIGHT
 
-# If set and not empty, use a "fill" strategy instead of a "fit" strategy.
-# The default fit strategy REQUIRES that final image's
-# width >= UPSCALE_TARGET_WIDTH OR its height >= UPSCALE_TARGET_HEIGHT.
-# With the "fill" strategy both MUST be true, the final image's
-# width >= UPSCALE_TARGET_WIDTH AND its height >= UPSCALE_TARGET_HEIGHT.
-# This has no impact if scaling factor is set.
-# UPSCALE_TARGET_FILL
+# If set and not empty/zero, use these as the minimum output resolutions.
+# The output image should completely "fill" this rectangle. Both the height and width should be at
+# least as large as these minimums.
+# These could potentially be larger than the TARGET values.
+# UPSCALE_MIN_WIDTH
+# UPSCALE_MIN_HEIGHT
 
 # If set and not empty, also denoise the image, if supported.
 # UPSCALE_DENOISE
@@ -92,7 +93,8 @@ dst = os.getenv('UPSCALE_DESTINATION', '')
 scale = int(os.getenv('UPSCALE_SCALING_FACTOR') or 0)
 tx = int(os.getenv('UPSCALE_TARGET_WIDTH') or 0)
 ty = int(os.getenv('UPSCALE_TARGET_HEIGHT') or 0)
-fill = bool(os.getenv('UPSCALE_TARGET_FILL'))
+mx = int(os.getenv('UPSCALE_MIN_WIDTH') or 0)
+my = int(os.getenv('UPSCALE_MIN_HEIGHT') or 0)
 denoise = bool(os.getenv('UPSCALE_DENOISE'))
 
 if not bool(src) or not bool(dst):
@@ -101,13 +103,12 @@ if not bool(src) or not bool(dst):
 if not os.path.isfile(src):
     raise Exception('Source must be a valid file.')
 
-if scale < 0 or tx < 0 or ty < 0:
-    raise Exception(
-        'Scale, target height, and target width cannot be negative')
+if scale < 0 or tx < 0 or ty < 0 or mx < 0 or my < 0:
+    raise Exception('Scale, heights, and widths cannot be negative')
 
-if scale > 0 and (tx > 0 or ty > 0):
+if scale > 0 and (tx > 0 or ty > 0 or mx > 0 or my > 0):
     raise Exception(
-        'Cannot specify scaling factor alongside target width or height.')
+        'Cannot specify scaling factor alongside widths or heights.')
 
 startupinfo = None
 # Never spawn console windows on Windows
@@ -150,15 +151,17 @@ if not format:
 
 if scale == 0 and (tx != 0 or ty != 0):
     if tx != 0 and ty != 0:
-        # Use min for fit, max for fill
-        if not fill:
-            scale = math.ceil(min(tx / width, ty / height))
-        else:
-            scale = math.ceil(max(tx / width, ty / height))
+        scale = math.ceil(min(tx / width, ty / height))
     elif tx == 0:
         scale = math.ceil(ty / height)
     else:
         scale = math.ceil(tx / width)
+
+if mx != 0:
+    scale = max(math.ceil(mx / width), scale)
+
+if my != 0:
+    scale = max(math.ceil(my / height), scale)
 
 # Round up to power of 2
 scale = 2**(scale - 1).bit_length() if scale > 0 else 1

@@ -9,8 +9,10 @@ use std::str::from_utf8;
 pub struct Upscaler {
     executable: Option<String>,
     scale: Option<u8>,
-    width: Option<u32>,
-    height: Option<u32>,
+    target_width: Option<u32>,
+    target_height: Option<u32>,
+    min_width: Option<u32>,
+    min_height: Option<u32>,
     denoise: bool,
     fill: bool,
 }
@@ -44,30 +46,39 @@ impl Upscaler {
 
     pub fn set_scale(&mut self, scale: u8) -> &mut Self {
         self.scale = Some(scale);
-        self.width = None;
-        self.height = None;
+        self.target_width = None;
+        self.target_height = None;
+        self.min_width = None;
+        self.min_height = None;
         self
     }
 
-    pub fn set_height(&mut self, height: u32) -> &mut Self {
+    pub fn set_target_height(&mut self, height: u32) -> &mut Self {
         self.scale = None;
-        self.height = Some(height);
+        self.target_height = Some(height);
         self
     }
 
-    pub fn set_width(&mut self, width: u32) -> &mut Self {
+    pub fn set_target_width(&mut self, width: u32) -> &mut Self {
         self.scale = None;
-        self.width = Some(width);
+        self.target_width = Some(width);
+        self
+    }
+
+    pub fn set_min_height(&mut self, height: u32) -> &mut Self {
+        self.scale = None;
+        self.min_height = Some(height);
+        self
+    }
+
+    pub fn set_min_width(&mut self, width: u32) -> &mut Self {
+        self.scale = None;
+        self.min_width = Some(width);
         self
     }
 
     pub fn set_denoise(&mut self, denoise: bool) -> &mut Self {
         self.denoise = denoise;
-        self
-    }
-
-    pub fn set_fill(&mut self, fill: bool) -> &mut Self {
-        self.fill = fill;
         self
     }
 
@@ -104,16 +115,20 @@ impl Upscaler {
             cmd.env("UPSCALE_SCALING_FACTOR", scale.to_string());
         }
 
-        if let Some(height) = self.height {
+        if let Some(height) = self.target_height {
             cmd.env("UPSCALE_TARGET_HEIGHT", height.to_string());
         }
 
-        if let Some(width) = self.width {
+        if let Some(width) = self.target_width {
             cmd.env("UPSCALE_TARGET_WIDTH", width.to_string());
         }
 
-        if self.fill {
-            cmd.env("UPSCALE_TARGET_FILL", "true");
+        if let Some(height) = self.min_height {
+            cmd.env("UPSCALE_MIN_HEIGHT", height.to_string());
+        }
+
+        if let Some(width) = self.min_width {
+            cmd.env("UPSCALE_MIN_WIDTH", width.to_string());
         }
 
         if self.denoise {
