@@ -11,7 +11,7 @@ repository = "https://github.com/awused/aw-upscale/server"
 
 
 [dependencies]
-aw-upscale = { git = "https://github.com/awused/aw-upscale" }
+aw-upscale = { path = ".." }
 futures = "0.3.16"
 once_cell = "1.8.0"
 prost = "0.8.0"

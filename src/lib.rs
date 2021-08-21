@@ -1,9 +1,15 @@
 use std::error::Error;
 use std::fmt::Display;
 use std::io::{stderr, Write};
+#[cfg(target_family = "windows")]
+use std::os::windows::process::CommandExt;
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::str::from_utf8;
+
+#[cfg(target_family = "windows")]
+const CREATE_NO_WINDOW: u32 = 0x08000000;
+
 
 #[derive(Default, Debug)]
 pub struct Upscaler {
@@ -105,6 +111,9 @@ impl Upscaler {
             cmd.arg("-").stdin(Stdio::piped());
             cmd
         };
+
+        #[cfg(target_family = "windows")]
+        cmd.creation_flags(CREATE_NO_WINDOW);
 
         cmd.stdout(Stdio::piped());
         cmd.stderr(Stdio::piped());

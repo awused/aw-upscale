@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 use std::net::ToSocketAddrs;
 use std::sync::Arc;
 use std::time::Duration;

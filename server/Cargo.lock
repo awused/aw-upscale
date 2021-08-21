@@ -69,7 +69,6 @@ checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 [[package]]
 name = "aw-upscale"
 version = "0.1.0"
-source = "git+https://github.com/awused/aw-upscale#d9f1668892bbeffcd20ba24f81ebca4d7feac39f"
 
 [[package]]
 name = "aw-upscale-server"
