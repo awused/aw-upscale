@@ -2,7 +2,12 @@
 name = "aw-upscale"
 version = "0.1.0"
 edition = "2018"
+description = "A small library to abstract over various image upscalers"
+readme = "README.md"
+license = "MIT"
+keywords = ["waifu2x"]
+homepage = "https://github.com/awused/aw-upscale"
+repository = "https://github.com/awused/aw-upscale"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]

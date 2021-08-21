@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-# upscale.py upscales an image file.
+# waifu2x-upscale.py upscales an image file.
 # Installation: copy this script somewhere and edit these lines.
 
 # This implementation uses waifu2x-ncnn-vulkan and imagemagick.

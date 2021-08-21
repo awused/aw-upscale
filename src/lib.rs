@@ -14,7 +14,6 @@ pub struct Upscaler {
     min_width: Option<u32>,
     min_height: Option<u32>,
     denoise: bool,
-    fill: bool,
 }
 
 #[derive(Debug)]
@@ -37,10 +36,11 @@ const DEFAULT_UPSCALER: &[u8] = include_bytes!("../waifu2x-upscale.py");
 impl Upscaler {
     /// Create a new upscaler using the given executable. If none, will use an embedded python
     /// script to call waifu2x-ncnn-vulkan.
+    #[must_use]
     pub fn new(upscaler: Option<String>) -> Self {
         Self {
             executable: upscaler,
-            ..Default::default()
+            ..Self::default()
         }
     }
 
@@ -85,10 +85,10 @@ impl Upscaler {
     /// Run the configred upscaler to convert from `source` to `destination`.
     ///
     /// `destination` must be a PNG.
-    pub fn run<P: AsRef<Path>>(
+    pub fn run<P: AsRef<Path>, T: AsRef<Path>>(
         &self,
         source: P,
-        destination: P,
+        destination: T,
     ) -> Result<(u32, u32), UpscaleError> {
         if let Some(ext) = destination.as_ref().extension() {
             if ext.to_ascii_lowercase() != "png" {
