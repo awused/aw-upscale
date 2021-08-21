@@ -1,0 +1,24 @@
+[package]
+name = "aw-upscale-server"
+version = "0.1.0"
+edition = "2018"
+description = "A server to run upscaling on another machine"
+readme = "README.md"
+license = "MIT"
+keywords = ["waifu2x"]
+homepage = "https://github.com/awused/aw-upscale/server"
+repository = "https://github.com/awused/aw-upscale/server"
+
+
+[dependencies]
+aw-upscale = { git = "https://github.com/awused/aw-upscale" }
+futures = "0.3.16"
+once_cell = "1.8.0"
+prost = "0.8.0"
+structopt = "0.3"
+tempfile = "3.2.0"
+tokio = { version = "1.8", features = ["fs", "net", "macros", "process", "rt", "rt-multi-thread", "sync"] }
+tonic = "0.5.2"
+
+[build-dependencies]
+tonic-build = "0.5.2"
