@@ -1,6 +1,7 @@
 #![windows_subsystem = "windows"]
 
 use std::net::ToSocketAddrs;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -32,7 +33,7 @@ pub struct Opt {
 
     #[structopt(short, long)]
     /// Upscaler to use. Leave unset to use the default waifu2x.
-    upscaler: Option<String>,
+    upscaler: Option<PathBuf>,
 }
 
 pub static OPTIONS: Lazy<Opt> = Lazy::new(Opt::from_args);

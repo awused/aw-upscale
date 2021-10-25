@@ -3,7 +3,7 @@ use std::fmt::Display;
 use std::io::{stderr, Write};
 #[cfg(target_family = "windows")]
 use std::os::windows::process::CommandExt;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::str::from_utf8;
 
@@ -13,7 +13,7 @@ const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 #[derive(Default, Debug)]
 pub struct Upscaler {
-    executable: Option<String>,
+    executable: Option<PathBuf>,
     scale: Option<u8>,
     target_width: Option<u32>,
     target_height: Option<u32>,
@@ -43,7 +43,7 @@ impl Upscaler {
     /// Create a new upscaler using the given executable. If none, will use an embedded python
     /// script to call waifu2x-ncnn-vulkan.
     #[must_use]
-    pub fn new(upscaler: Option<String>) -> Self {
+    pub fn new(upscaler: Option<PathBuf>) -> Self {
         Self {
             executable: upscaler,
             ..Self::default()
