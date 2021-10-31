@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\rupscale.proto\x12\x07upscale\"+\n\nResolution\x12\r\n\x05width\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\r\"X\n\x0bResolutions\x12#\n\x06target\x18\x01 \x01(\x0b\x32\x13.upscale.Resolution\x12$\n\x07minimum\x18\x02 \x01(\x0b\x32\x13.upscale.Resolution\"\x9b\x01\n\x0eUpscaleRequest\x12\x0f\n\x05scale\x18\x01 \x01(\rH\x00\x12+\n\x0bresolutions\x18\x02 \x01(\x0b\x32\x14.upscale.ResolutionsH\x00\x12\x0f\n\x07\x64\x65noise\x18\x03 \x01(\x08\x12\x15\n\roriginal_file\x18\x04 \x01(\x0c\x12\x14\n\x0coriginal_ext\x18\x05 \x01(\tB\r\n\x0btarget_size\"E\n\x0fUpscaleResponse\x12 \n\x03res\x18\x01 \x01(\x0b\x32\x13.upscale.Resolution\x12\x10\n\x08upscaled\x18\x02 \x01(\x0c\x32K\n\tAwUpscale\x12>\n\x07Upscale\x12\x17.upscale.UpscaleRequest\x1a\x18.upscale.UpscaleResponse\"\x00\x62\x06proto3'
+  serialized_pb=b'\n\rupscale.proto\x12\x07upscale\"+\n\nResolution\x12\r\n\x05width\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\r\"X\n\x0bResolutions\x12#\n\x06target\x18\x01 \x01(\x0b\x32\x13.upscale.Resolution\x12$\n\x07minimum\x18\x02 \x01(\x0b\x32\x13.upscale.Resolution\"\xbf\x01\n\x0eUpscaleRequest\x12\x0f\n\x05scale\x18\x01 \x01(\rH\x00\x12+\n\x0bresolutions\x18\x02 \x01(\x0b\x32\x14.upscale.ResolutionsH\x00\x12\x11\n\x07nothing\x18\x06 \x01(\rH\x00\x12\x14\n\x07\x64\x65noise\x18\x03 \x01(\x11H\x01\x88\x01\x01\x12\x15\n\roriginal_file\x18\x04 \x01(\x0c\x12\x14\n\x0coriginal_ext\x18\x05 \x01(\tB\r\n\x0btarget_sizeB\n\n\x08_denoise\"E\n\x0fUpscaleResponse\x12 \n\x03res\x18\x01 \x01(\x0b\x32\x13.upscale.Resolution\x12\x10\n\x08upscaled\x18\x02 \x01(\x0c\x32K\n\tAwUpscale\x12>\n\x07Upscale\x12\x17.upscale.UpscaleRequest\x1a\x18.upscale.UpscaleResponse\"\x00\x62\x06proto3'
 )
 
 
@@ -126,21 +126,28 @@ _UPSCALEREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='denoise', full_name='upscale.UpscaleRequest.denoise', index=2,
-      number=3, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
+      name='nothing', full_name='upscale.UpscaleRequest.nothing', index=2,
+      number=6, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='original_file', full_name='upscale.UpscaleRequest.original_file', index=3,
+      name='denoise', full_name='upscale.UpscaleRequest.denoise', index=3,
+      number=3, type=17, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='original_file', full_name='upscale.UpscaleRequest.original_file', index=4,
       number=4, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=b"",
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='original_ext', full_name='upscale.UpscaleRequest.original_ext', index=4,
+      name='original_ext', full_name='upscale.UpscaleRequest.original_ext', index=5,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -162,9 +169,14 @@ _UPSCALEREQUEST = _descriptor.Descriptor(
       index=0, containing_type=None,
       create_key=_descriptor._internal_create_key,
     fields=[]),
+    _descriptor.OneofDescriptor(
+      name='_denoise', full_name='upscale.UpscaleRequest._denoise',
+      index=1, containing_type=None,
+      create_key=_descriptor._internal_create_key,
+    fields=[]),
   ],
   serialized_start=162,
-  serialized_end=317,
+  serialized_end=353,
 )
 
 
@@ -202,8 +214,8 @@ _UPSCALERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=319,
-  serialized_end=388,
+  serialized_start=355,
+  serialized_end=424,
 )
 
 _RESOLUTIONS.fields_by_name['target'].message_type = _RESOLUTION
@@ -215,6 +227,12 @@ _UPSCALEREQUEST.fields_by_name['scale'].containing_oneof = _UPSCALEREQUEST.oneof
 _UPSCALEREQUEST.oneofs_by_name['target_size'].fields.append(
   _UPSCALEREQUEST.fields_by_name['resolutions'])
 _UPSCALEREQUEST.fields_by_name['resolutions'].containing_oneof = _UPSCALEREQUEST.oneofs_by_name['target_size']
+_UPSCALEREQUEST.oneofs_by_name['target_size'].fields.append(
+  _UPSCALEREQUEST.fields_by_name['nothing'])
+_UPSCALEREQUEST.fields_by_name['nothing'].containing_oneof = _UPSCALEREQUEST.oneofs_by_name['target_size']
+_UPSCALEREQUEST.oneofs_by_name['_denoise'].fields.append(
+  _UPSCALEREQUEST.fields_by_name['denoise'])
+_UPSCALEREQUEST.fields_by_name['denoise'].containing_oneof = _UPSCALEREQUEST.oneofs_by_name['_denoise']
 _UPSCALERESPONSE.fields_by_name['res'].message_type = _RESOLUTION
 DESCRIPTOR.message_types_by_name['Resolution'] = _RESOLUTION
 DESCRIPTOR.message_types_by_name['Resolutions'] = _RESOLUTIONS
@@ -259,8 +277,8 @@ _AWUPSCALE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=390,
-  serialized_end=465,
+  serialized_start=426,
+  serialized_end=501,
   methods=[
   _descriptor.MethodDescriptor(
     name='Upscale',

@@ -21,9 +21,10 @@ message UpscaleRequest {
   oneof target_size {
     uint32 scale = 1;
     Resolutions resolutions = 2;
+    uint32 nothing = 6;
   }
 
-  bool denoise = 3;
+  optional sint32 denoise = 3;
 
   bytes original_file = 4;
   string original_ext = 5;

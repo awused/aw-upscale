@@ -73,7 +73,8 @@ except:
 # UPSCALE_MIN_WIDTH
 # UPSCALE_MIN_HEIGHT
 
-# If set and not empty, also denoise the image, if supported.
+# If set and not empty it will be a signed integer.
+# Higher values imply higher denoising, if available.
 # UPSCALE_DENOISE
 
 # The script MUST write the destination file or exit with an error.
@@ -95,7 +96,8 @@ tx = int(os.getenv('UPSCALE_TARGET_WIDTH') or 0)
 ty = int(os.getenv('UPSCALE_TARGET_HEIGHT') or 0)
 mx = int(os.getenv('UPSCALE_MIN_WIDTH') or 0)
 my = int(os.getenv('UPSCALE_MIN_HEIGHT') or 0)
-denoise = bool(os.getenv('UPSCALE_DENOISE'))
+denoise = int(os.getenv('UPSCALE_DENOISE')
+              or 0) if os.getenv('UPSCALE_DENOISE') is not None else None
 
 if not bool(src) or not bool(dst):
     raise Exception('Source and destination must be present')
@@ -172,7 +174,7 @@ if scale > 32:
 # waifu2x-ncnn-vulkan only understands jpeg, png, and webp
 # We can write to the destination file, but we should remove it if upscaling fails later.
 wrote_dst = False
-if (scale == 1 and not denoise) or format not in ['png', 'jpeg', 'webp']:
+if (scale == 1 and denoise is None) or format not in ['png', 'jpeg', 'webp']:
     if format == "png":
         # Creating a symlink is legal.
         os.symlink(src, dst)
@@ -192,9 +194,15 @@ if (scale == 1 and not denoise) or format not in ['png', 'jpeg', 'webp']:
     src = dst
     wrote_dst = True
 
-if scale == 1 and not denoise:
+if scale == 1 and denoise is None:
     print(f"{scale*width}x{scale*height}")
     sys.exit(0)
+
+# Clamp denoise to valid values
+if denoise is None:
+    denoise = -1
+
+denoise = min(max(denoise, -1), 3)
 
 # yapf: disable
 cp = subprocess.run([
@@ -203,7 +211,7 @@ cp = subprocess.run([
     '-i', src,
     '-o', dst,
     '-s', str(scale),
-    '-n', '1' if denoise else '0',
+    '-n', str(denoise),
     # Force tile size of 400, which is the highest waifu2x-ncnn-vulkan will autoselect
     '-t', '400',
 ], **kwargs)

@@ -41,7 +41,8 @@ tx = int(os.getenv('UPSCALE_TARGET_WIDTH') or 0)
 ty = int(os.getenv('UPSCALE_TARGET_HEIGHT') or 0)
 mx = int(os.getenv('UPSCALE_MIN_WIDTH') or 0)
 my = int(os.getenv('UPSCALE_MIN_HEIGHT') or 0)
-denoise = bool(os.getenv('UPSCALE_DENOISE'))
+denoise = int(os.getenv('UPSCALE_DENOISE')
+              or 0) if os.getenv('UPSCALE_DENOISE') is not None else None
 
 if not bool(src) or not bool(dst):
     raise Exception('Source and destination must be present')
@@ -81,6 +82,9 @@ try:
             kwargs = {'resolutions': resolutions}
         else:
             kwargs = {'scale': scale}
+
+        if denoise is not None:
+            kwargs['denoise'] = denoise
 
         req = upscale_pb2.UpscaleRequest(
             original_ext=os.path.splitext(src)[1],

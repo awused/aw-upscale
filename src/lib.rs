@@ -19,7 +19,7 @@ pub struct Upscaler {
     target_height: Option<u32>,
     min_width: Option<u32>,
     min_height: Option<u32>,
-    denoise: bool,
+    denoise: Option<i32>,
 }
 
 #[derive(Debug)]
@@ -83,7 +83,7 @@ impl Upscaler {
         self
     }
 
-    pub fn set_denoise(&mut self, denoise: bool) -> &mut Self {
+    pub fn set_denoise(&mut self, denoise: Option<i32>) -> &mut Self {
         self.denoise = denoise;
         self
     }
@@ -140,8 +140,8 @@ impl Upscaler {
             cmd.env("UPSCALE_MIN_WIDTH", width.to_string());
         }
 
-        if self.denoise {
-            cmd.env("UPSCALE_DENOISE", "true");
+        if let Some(denoise) = self.denoise {
+            cmd.env("UPSCALE_DENOISE", denoise.to_string());
         }
 
         let mut spawned = match cmd.spawn() {
