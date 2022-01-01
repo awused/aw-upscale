@@ -9,9 +9,9 @@ use api::aw_upscale_server::{AwUpscale, AwUpscaleServer};
 use api::upscale_request::TargetSize;
 use api::{Resolution, UpscaleRequest, UpscaleResponse};
 use aw_upscale::Upscaler;
+use clap::StructOpt;
 use futures::future::try_join_all;
 use once_cell::sync::Lazy;
-use structopt::StructOpt;
 use tokio::sync::Mutex;
 use tokio::time::{self, Interval};
 use tonic::transport::Server;
@@ -36,7 +36,7 @@ pub struct Opt {
     upscaler: Option<PathBuf>,
 }
 
-pub static OPTIONS: Lazy<Opt> = Lazy::new(Opt::from_args);
+pub static OPTIONS: Lazy<Opt> = Lazy::new(Opt::parse);
 
 
 pub struct UpscaleServer {
