@@ -104,12 +104,14 @@ try:
         req = upscale_pb2.UpscaleRequest(
             original_ext=os.path.splitext(src)[1],
             original_file=contents,
-            timeout=timeout,
             **kwargs,
         )
 
         stub = upscale_pb2_grpc.AwUpscaleStub(channel)
-        resp = stub.Upscale(req)
+        resp = stub.Upscale(
+            req,
+            timeout=timeout,
+        )
 
         with open(dst, "wb") as f:
             f.write(resp.upscaled)
