@@ -1,6 +1,7 @@
 #![windows_subsystem = "windows"]
 
 use std::net::ToSocketAddrs;
+use std::num::NonZeroU8;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
@@ -12,7 +13,7 @@ use aw_upscale::Upscaler;
 use clap::StructOpt;
 use futures::future::try_join_all;
 use once_cell::sync::Lazy;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, Semaphore};
 use tokio::time::{self, Interval};
 use tonic::transport::Server;
 use tonic::{Request, Response, Status};
@@ -34,6 +35,11 @@ pub struct Opt {
     #[structopt(short, long)]
     /// Upscaler to use. Leave unset to use the default waifu2x.
     upscaler: Option<PathBuf>,
+
+    #[structopt(short, long)]
+    /// Maximum parallel jobs to dispatch to the GPU at once. Set to avoid consuming too much vram.
+    /// Leave unset to have no limit
+    jobs: Option<NonZeroU8>,
 }
 
 pub static OPTIONS: Lazy<Opt> = Lazy::new(Opt::parse);
@@ -41,6 +47,7 @@ pub static OPTIONS: Lazy<Opt> = Lazy::new(Opt::parse);
 
 pub struct UpscaleServer {
     interval: Arc<Mutex<Interval>>,
+    semaphore: Option<Arc<Semaphore>>,
 }
 
 
@@ -69,6 +76,12 @@ impl AwUpscale for UpscaleServer {
         }
 
         u.set_denoise(req.denoise);
+        u.set_timeout(
+            req.timeout
+                .as_ref()
+                .map(|d| d.clone().try_into().unwrap_or_else(|neg| neg)),
+        );
+
 
         let input = tempfile::Builder::new()
             .prefix("aw-upscale")
@@ -88,12 +101,21 @@ impl AwUpscale for UpscaleServer {
         let outpath = (*output).to_path_buf();
         self.interval.lock().await.tick().await;
 
+        let permit = if let Some(sem) = self.semaphore.as_ref() {
+            // If the semaphore has been closed we can't recover.
+            Some(sem.acquire().await.expect("Semaphore unexpectedly closed"))
+        } else {
+            None
+        };
+
         let (width, height) = tokio::task::spawn_blocking(move || {
             u.run(input, &outpath)
                 .map_err(|e| Status::internal(e.to_string()))
         })
         .await
         .map_err(|e| Status::internal(e.to_string()))??;
+
+        drop(permit);
 
         let upscaled = tokio::fs::read(output).await?;
 
@@ -116,11 +138,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     interval.set_missed_tick_behavior(time::MissedTickBehavior::Delay);
     let interval = Arc::new(Mutex::new(interval));
 
+    let semaphore = OPTIONS
+        .jobs
+        .map(|j| Arc::new(Semaphore::new(j.get() as usize)));
+
 
     let servers: Vec<_> = addrs
         .map(|addr| {
             let server = UpscaleServer {
                 interval: interval.clone(),
+                semaphore: semaphore.clone(),
             };
             println!("Listening on {}", addr);
 

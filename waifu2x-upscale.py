@@ -77,6 +77,11 @@ except:
 # Higher values imply higher denoising, if available.
 # UPSCALE_DENOISE
 
+# If set and not empty it will be the timeout, given in seconds as a float.
+# The upscaler cannot rely on having the entire available time slice since the timeout starts
+# when the process is spawned.
+# UPSCALE_TIMEOUT
+
 # The script MUST write the destination file or exit with an error.
 # The script MUST write the resolution of the resulting file, and nothing else, to stdout on success.
 # The format of the resolution MUST be WIDTHxHEIGHT. Example: 3840x2160
@@ -98,6 +103,7 @@ mx = int(os.getenv('UPSCALE_MIN_WIDTH') or 0)
 my = int(os.getenv('UPSCALE_MIN_HEIGHT') or 0)
 denoise = int(os.getenv('UPSCALE_DENOISE')
               or 0) if os.getenv('UPSCALE_DENOISE') is not None else None
+timeout = float(os.getenv('UPSCALE_TIMEOUT') or 0) or None
 
 if not bool(src) or not bool(dst):
     raise Exception('Source and destination must be present')
@@ -111,6 +117,10 @@ if scale < 0 or tx < 0 or ty < 0 or mx < 0 or my < 0:
 if scale > 0 and (tx > 0 or ty > 0 or mx > 0 or my > 0):
     raise Exception(
         'Cannot specify scaling factor alongside widths or heights.')
+
+# This script gives the full timeout to waifu2x, even though it really won't have that long to run.
+if timeout is not None and (timeout < 0 or not math.isfinite(timeout)):
+    raise Exception('Cannot specify negative or infinite timeout')
 
 startupinfo = None
 # Never spawn console windows on Windows
@@ -214,7 +224,7 @@ cp = subprocess.run([
     '-n', str(denoise),
     # Force tile size of 400, which is the highest waifu2x-ncnn-vulkan will autoselect
     '-t', '400',
-], **kwargs)
+], timeout=timeout, **kwargs)
 # yapf: enable
 try:
     cp.check_returncode()

@@ -2,3 +2,4 @@
 /server/target
 /Cargo.lock
 __pycache__
+.todo
