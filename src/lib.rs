@@ -8,12 +8,24 @@ use std::process::{Command, Stdio};
 use std::str::from_utf8;
 use std::time::Duration;
 
-use process_control::{ChildExt, Control};
+use derive_more::From;
+use process_control::{ChildExt, Control, Output};
 
 #[cfg(target_family = "windows")]
 const CREATE_NO_WINDOW: u32 = 0x08000000;
 
+// enum UpscaleTarget {
+//     None,
+//     Scale(u8),
+//     Res {
+//         target_width: Option<u32>,
+//         target_height: Option<u32>,
+//         min_width: Option<u32>,
+//         min_height: Option<u32>,
+//     },
+// }
 
+// TODO -- redo with a nicer enum
 #[derive(Default, Debug, Clone)]
 pub struct Upscaler {
     executable: Option<PathBuf>,
@@ -26,11 +38,17 @@ pub struct Upscaler {
     timeout: Option<Duration>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, From)]
 pub enum UpscaleError {
+    /// The destination format must be PNG
     DestinationNotPng,
-    ProcessError(Box<dyn Error>),
-    IncorrectOutput,
+    /// The program failed to start or complete.
+    ProcessError(std::io::Error),
+    /// The program completed unsuccessfully.
+    ExitError(Output),
+    /// The output from the program was not in the correct format.
+    InvalidOutput(Vec<u8>),
+    /// The program failed to complete within the specified time and was killed.
     Timeout,
 }
 
@@ -49,10 +67,7 @@ impl Upscaler {
     /// script to call waifu2x-ncnn-vulkan.
     #[must_use]
     pub fn new(upscaler: Option<PathBuf>) -> Self {
-        Self {
-            executable: upscaler,
-            ..Self::default()
-        }
+        Self { executable: upscaler, ..Self::default() }
     }
 
     /// Sets the scale for the upscaler, overriding any previously set widths or heights.
@@ -178,10 +193,7 @@ impl Upscaler {
             cmd.env("UPSCALE_TIMEOUT", timeout.as_secs_f64().to_string());
         }
 
-        let mut spawned = match cmd.spawn() {
-            Ok(sp) => sp,
-            Err(e) => return Err(UpscaleError::ProcessError(Box::from(e))),
-        };
+        let mut spawned = cmd.spawn()?;
 
 
         if let Some(mut stdin) = spawned.stdin.take() {
@@ -191,7 +203,7 @@ impl Upscaler {
                 // stdout.
                 drop(spawned.kill());
                 drop(spawned.wait_with_output());
-                return Err(UpscaleError::ProcessError(Box::from(e)));
+                return Err(e.into());
             }
         }
 
@@ -200,24 +212,19 @@ impl Upscaler {
                 .controlled_with_output()
                 .time_limit(timeout)
                 .terminate_for_timeout()
-                .wait()
+                .wait()?
             {
-                Ok(Some(output)) => Ok(output),
-                Ok(None) => return Err(UpscaleError::Timeout),
-                Err(e) => Err(e),
+                Some(output) => output,
+                None => return Err(UpscaleError::Timeout),
             }
         } else {
-            spawned.wait_with_output().map(Into::into)
-        };
-
-        let output = match output {
-            Ok(out) => out,
-            Err(e) => return Err(UpscaleError::ProcessError(Box::from(e))),
+            spawned.wait_with_output().map(Into::into)?
         };
 
         if !output.status.success() {
             drop(stderr().write_all(&output.stderr));
-            return Err(UpscaleError::ProcessError(output.status.to_string().into()));
+
+            return Err(output.into());
         }
 
         let res = (|| {
@@ -229,9 +236,7 @@ impl Upscaler {
 
         match res {
             Some(res) => Ok(res),
-            None => Err(UpscaleError::ProcessError(
-                "Invalid output".to_string().into(),
-            )),
+            None => Err(output.stdout.into()),
         }
     }
 }
