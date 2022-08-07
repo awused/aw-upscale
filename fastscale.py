@@ -158,8 +158,7 @@ if mx != 0:
 if my != 0:
     scale = max(math.ceil(my / height), scale)
 
-# Round up to power of 2
-scale = 2**(scale - 1).bit_length() if scale > 0 else 1
+scale = scale if scale > 0 else 1
 if scale > 32:
     print('Scale cannot be above 32', file=sys.stderr)
     scale = 32

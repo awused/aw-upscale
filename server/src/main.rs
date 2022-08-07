@@ -13,6 +13,7 @@ use aw_upscale::Upscaler;
 use clap::StructOpt;
 use futures::future::try_join_all;
 use once_cell::sync::Lazy;
+use prost_types::DurationError;
 use tokio::sync::{Mutex, Semaphore};
 use tokio::time::{self, Interval};
 use tonic::transport::Server;
@@ -76,11 +77,12 @@ impl AwUpscale for UpscaleServer {
         }
 
         u.set_denoise(req.denoise);
-        u.set_timeout(
-            req.timeout
-                .as_ref()
-                .map(|d| d.clone().try_into().unwrap_or_else(|neg| neg)),
-        );
+        u.set_timeout(req.timeout.as_ref().map(|d| {
+            d.clone().try_into().unwrap_or_else(|e| match e {
+                DurationError::NegativeDuration(neg) => neg,
+                _ => Duration::from_secs(60),
+            })
+        }));
 
 
         let input = tempfile::Builder::new()
@@ -88,10 +90,7 @@ impl AwUpscale for UpscaleServer {
             .suffix(&(".".to_string() + &req.original_ext))
             .tempfile()?;
 
-        let output = tempfile::Builder::new()
-            .prefix("aw-upscale")
-            .suffix(".png")
-            .tempfile()?;
+        let output = tempfile::Builder::new().prefix("aw-upscale").suffix(".png").tempfile()?;
 
         let output = output.into_temp_path();
 
@@ -109,8 +108,7 @@ impl AwUpscale for UpscaleServer {
         };
 
         let (width, height) = tokio::task::spawn_blocking(move || {
-            u.run(input, &outpath)
-                .map_err(|e| Status::internal(e.to_string()))
+            u.run(input, &outpath).map_err(|e| Status::internal(e.to_string()))
         })
         .await
         .map_err(|e| Status::internal(e.to_string()))??;
@@ -138,9 +136,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     interval.set_missed_tick_behavior(time::MissedTickBehavior::Delay);
     let interval = Arc::new(Mutex::new(interval));
 
-    let semaphore = OPTIONS
-        .jobs
-        .map(|j| Arc::new(Semaphore::new(j.get() as usize)));
+    let semaphore = OPTIONS.jobs.map(|j| Arc::new(Semaphore::new(j.get() as usize)));
 
 
     let servers: Vec<_> = addrs
