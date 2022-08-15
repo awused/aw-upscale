@@ -38,7 +38,7 @@ pub struct Upscaler {
     timeout: Option<Duration>,
 }
 
-#[derive(Debug, From)]
+#[derive(From)]
 pub enum UpscaleError {
     /// The destination format must be PNG
     DestinationNotPng,
@@ -50,6 +50,49 @@ pub enum UpscaleError {
     InvalidOutput(Vec<u8>),
     /// The program failed to complete within the specified time and was killed.
     Timeout,
+}
+
+#[cfg(unix)]
+mod tostr {
+    use std::ffi::OsStr;
+    use std::os::unix::prelude::OsStrExt;
+
+    pub fn convert(v: &[u8]) -> &OsStr {
+        OsStr::from_bytes(v)
+    }
+}
+
+#[cfg(windows)]
+mod tostr {
+    use std::str::from_utf8;
+
+    pub fn convert(v: &[u8]) -> String {
+        match from_utf8(v) {
+            Ok(s) => s.to_owned(),
+            // Can't be bothered to decode UTF-16, at least for now.
+            Err(_e) => format!("{v:?}"),
+        }
+    }
+}
+
+
+impl std::fmt::Debug for UpscaleError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::DestinationNotPng => write!(f, "DestinationNotPng"),
+            Self::ProcessError(arg0) => f.debug_tuple("ProcessError").field(arg0).finish(),
+            Self::ExitError(arg0) => f
+                .debug_tuple("ExitError")
+                .field(&arg0.status)
+                .field(&tostr::convert(&arg0.stdout))
+                .field(&tostr::convert(&arg0.stderr))
+                .finish(),
+            Self::InvalidOutput(arg0) => {
+                f.debug_tuple("InvalidOutput").field(&tostr::convert(arg0)).finish()
+            }
+            Self::Timeout => write!(f, "Timeout"),
+        }
+    }
 }
 
 impl Display for UpscaleError {
