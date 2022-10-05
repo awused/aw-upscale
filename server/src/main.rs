@@ -10,7 +10,7 @@ use api::aw_upscale_server::{AwUpscale, AwUpscaleServer};
 use api::upscale_request::TargetSize;
 use api::{Resolution, UpscaleRequest, UpscaleResponse};
 use aw_upscale::Upscaler;
-use clap::StructOpt;
+use clap::Parser;
 use futures::future::try_join_all;
 use once_cell::sync::Lazy;
 use prost_types::DurationError;
@@ -23,21 +23,21 @@ pub mod api {
     tonic::include_proto!("upscale");
 }
 
-#[derive(Debug, StructOpt)]
-#[structopt(
+#[derive(Debug, Parser)]
+#[command(
     name = "aw-upscale-server",
     about = "Server to use aw-upscale remotely."
 )]
 pub struct Opt {
-    #[structopt(short, long)]
+    #[arg(short, long)]
     /// Address to listen on. Example: locahost:9091
     addr: String,
 
-    #[structopt(short, long)]
+    #[arg(short, long, value_parser)]
     /// Upscaler to use. Leave unset to use the default waifu2x.
     upscaler: Option<PathBuf>,
 
-    #[structopt(short, long)]
+    #[arg(short, long)]
     /// Maximum parallel jobs to dispatch to the GPU at once. Set to avoid consuming too much vram.
     /// Leave unset to have no limit
     jobs: Option<NonZeroU8>,
@@ -78,9 +78,12 @@ impl AwUpscale for UpscaleServer {
 
         u.set_denoise(req.denoise);
         u.set_timeout(req.timeout.as_ref().map(|d| {
-            d.clone().try_into().unwrap_or_else(|e| match e {
-                DurationError::NegativeDuration(neg) => neg,
-                _ => Duration::from_secs(60),
+            d.clone().try_into().unwrap_or_else(|e| {
+                if let DurationError::NegativeDuration(neg) = e {
+                    neg
+                } else {
+                    Duration::from_secs(60)
+                }
             })
         }));
 
