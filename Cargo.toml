@@ -11,5 +11,5 @@ repository = "https://github.com/awused/aw-upscale"
 
 
 [dependencies]
-process_control = "4.0.0"
+process_control = "4.0.2"
 derive_more = { version = "0.99.17", default-features = false, features = [ "from" ] }
