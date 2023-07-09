@@ -120,7 +120,7 @@ impl AwUpscale for UpscaleServer {
 
         let upscaled = tokio::fs::read(output).await?;
 
-        println!("Upscaled {}x{}", width, height);
+        println!("Upscaled {width}x{height}");
 
         Ok(Response::new(UpscaleResponse {
             res: Some(Resolution { width, height }),
@@ -148,9 +148,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 interval: interval.clone(),
                 semaphore: semaphore.clone(),
             };
-            println!("Listening on {}", addr);
+            println!("Listening on {addr}");
 
-            let server = AwUpscaleServer::new(server);
+            let server = AwUpscaleServer::new(server).max_decoding_message_size(500 * 1024 * 1024);
 
             Server::builder().add_service(server).serve(addr)
         })
