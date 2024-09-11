@@ -8,7 +8,7 @@ use std::process::{Command, Stdio};
 use std::str::from_utf8;
 use std::time::Duration;
 
-use derive_more::From;
+use derive_more::derive::From;
 use process_control::{ChildExt, Control, Output};
 
 #[cfg(target_family = "windows")]
