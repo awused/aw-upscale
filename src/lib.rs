@@ -1,6 +1,6 @@
 use std::error::Error;
 use std::fmt::Display;
-use std::io::{stderr, Write};
+use std::io::{Write, stderr};
 #[cfg(target_family = "windows")]
 use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
@@ -8,7 +8,7 @@ use std::process::{Command, Stdio};
 use std::str::from_utf8;
 use std::time::Duration;
 
-use derive_more::derive::From;
+use derive_more::From;
 use process_control::{ChildExt, Control, Output};
 
 #[cfg(target_family = "windows")]
@@ -97,7 +97,7 @@ impl std::fmt::Debug for UpscaleError {
 
 impl Display for UpscaleError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{self:?}")
     }
 }
 
@@ -185,7 +185,7 @@ impl Upscaler {
         destination: T,
     ) -> Result<(u32, u32), UpscaleError> {
         if let Some(ext) = destination.as_ref().extension() {
-            if ext.to_ascii_lowercase() != "png" {
+            if !ext.eq_ignore_ascii_case("png") {
                 return Err(UpscaleError::DestinationNotPng);
             }
         } else {

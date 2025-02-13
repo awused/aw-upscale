@@ -24,21 +24,15 @@ waifu2x_model = r'models-cunet'
 # If you are not looking to implement your own upscaler you can stop reading now.
 # -------------------------------------------------------------------------------
 
-import math
-import os
-import shutil
-import subprocess
-import sys
-
-# Use gdk-pixbuf2 through PyGobject if available, if not fall back to the imagemagick executable.
-try:
-    import gi
-    gi.require_version('GdkPixbuf', '2.0')
-    from gi.repository import GdkPixbuf
-    use_gdk = True
-except:
-    print('gdk-pixbuf2 unavailable', file=sys.stderr)
-    use_gdk = False
+# The script MUST write the destination file or exit with an error.
+# The script MUST write the resolution of the resulting file, and nothing else, to stdout on success.
+# The format of the resolution MUST be WIDTHxHEIGHT. Example: 3840x2160
+# The script CAN symlink the destination file to the source file if they share extensions and no
+# processing is required.
+# The script SHOULD NOT write the file without returning a success code.
+# The script not writing the destination file is treated as an error.
+# It is valid to call this script with no scaling factor, target width/height,
+# or denoise operations specified.
 
 # This script is called with several environment variables.
 
@@ -82,17 +76,23 @@ except:
 # when the process is spawned.
 # UPSCALE_TIMEOUT
 
-# The script MUST write the destination file or exit with an error.
-# The script MUST write the resolution of the resulting file, and nothing else, to stdout on success.
-# The format of the resolution MUST be WIDTHxHEIGHT. Example: 3840x2160
-# The script CAN symlink the destination file to the source file if they share extensions and no
-# processing is required.
-# The script SHOULD NOT write the file without returning a success code.
-# The script not writing the destination file is treated as an error.
-# It is valid to call this script with no scaling factor, target width/height,
-# or denoise operations specified.
-
 # -------------------------------------------------------------------------------
+
+import math
+import os
+import shutil
+import subprocess
+import sys
+
+# Use gdk-pixbuf2 through PyGobject if available, if not fall back to the imagemagick executable.
+try:
+    import gi
+    gi.require_version('GdkPixbuf', '2.0')
+    from gi.repository import GdkPixbuf
+    use_gdk = True
+except:
+    print('gdk-pixbuf2 unavailable', file=sys.stderr)
+    use_gdk = False
 
 src = os.getenv('UPSCALE_SOURCE', '')
 dst = os.getenv('UPSCALE_DESTINATION', '')
