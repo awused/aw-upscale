@@ -78,7 +78,7 @@ impl AwUpscale for UpscaleServer {
 
         u.set_denoise(req.denoise);
         u.set_timeout(req.timeout.as_ref().map(|d| {
-            d.clone().try_into().unwrap_or_else(|e| {
+            (*d).try_into().unwrap_or_else(|e| {
                 if let DurationError::NegativeDuration(neg) = e {
                     neg
                 } else {
