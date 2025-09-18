@@ -3,7 +3,7 @@
 use std::net::ToSocketAddrs;
 use std::num::NonZeroU8;
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 use std::time::Duration;
 
 use api::aw_upscale_server::{AwUpscale, AwUpscaleServer};
@@ -12,7 +12,6 @@ use api::{Resolution, UpscaleRequest, UpscaleResponse};
 use aw_upscale::Upscaler;
 use clap::Parser;
 use futures::future::try_join_all;
-use once_cell::sync::Lazy;
 use prost_types::DurationError;
 use tokio::sync::{Mutex, Semaphore};
 use tokio::time::{self, Interval};
@@ -43,7 +42,7 @@ pub struct Opt {
     jobs: Option<NonZeroU8>,
 }
 
-pub static OPTIONS: Lazy<Opt> = Lazy::new(Opt::parse);
+pub static OPTIONS: LazyLock<Opt> = LazyLock::new(Opt::parse);
 
 
 pub struct UpscaleServer {
