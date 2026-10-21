@@ -13,3 +13,6 @@ repository = "https://github.com/awused/aw-upscale"
 [dependencies]
 process_control = "5.2.0"
 derive_more = { version = "2.1.1", default-features = false, features = [ "from" ] }
+
+[workspace]
+members = ["server"]

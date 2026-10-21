@@ -16,6 +16,7 @@ waifu2x = r'waifu2x-ncnn-vulkan'
 # The path to the chosen model for waifu2x-ncnn-vulkan.
 # By default it is a path relative to the directory containing the executable.
 # The CUNET model is recommended for quality.
+# The CUNET model has been the default for a long time, but set it explicitly
 # If necessary make this into an absolute path to the model.
 # waifu2x_model = r'C:\path\to\waifu2x-ncnn-vulkan\models\models-cunet'
 waifu2x_model = r'models-cunet'

@@ -239,15 +239,15 @@ impl Upscaler {
         let mut spawned = cmd.spawn()?;
 
 
-        if let Some(mut stdin) = spawned.stdin.take() {
-            if let Err(e) = stdin.write_all(DEFAULT_UPSCALER) {
-                // Attempt to kill the child process, but ignore any failures.
-                // Use wait_with_output to avoid deadlocks if the process is blocked on sending to
-                // stdout.
-                drop(spawned.kill());
-                drop(spawned.wait_with_output());
-                return Err(e.into());
-            }
+        if let Some(mut stdin) = spawned.stdin.take()
+            && let Err(e) = stdin.write_all(DEFAULT_UPSCALER)
+        {
+            // Attempt to kill the child process, but ignore any failures.
+            // Use wait_with_output to avoid deadlocks if the process is blocked on sending to
+            // stdout.
+            drop(spawned.kill());
+            drop(spawned.wait_with_output());
+            return Err(e.into());
         }
 
         let output = if let Some(timeout) = self.timeout {

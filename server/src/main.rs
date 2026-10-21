@@ -102,7 +102,7 @@ impl AwUpscale for UpscaleServer {
         let outpath = (*output).to_path_buf();
         self.interval.lock().await.tick().await;
 
-        let permit = if let Some(sem) = self.semaphore.as_ref() {
+        let permit = if let Some(ref sem) = self.semaphore {
             // If the semaphore has been closed we can't recover.
             Some(sem.acquire().await.expect("Semaphore unexpectedly closed"))
         } else {
