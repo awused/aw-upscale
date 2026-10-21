@@ -17,7 +17,7 @@ futures = { version = "0.3.34", default-features = false }
 prost = { version = "0.14.4", default-features = false, features = ["std"] }
 prost-types = "0.14.4"
 tempfile = "3.27.0"
-tokio = { version = "1.54.0", features = ["fs", "net", "macros", "process", "rt", "rt-multi-thread", "sync"] }
+tokio = { version = "1.54.1", features = ["fs", "net", "macros", "process", "rt", "rt-multi-thread", "sync"] }
 tonic = "0.14.6"
 tonic-prost = "0.14.6"
 
